@@ -1,0 +1,37 @@
+/home/sonu/anaconda3/envs/torch/bin/python /home/sonu/PycharmProjects/nmt/main.py
+training on cuda
+[Epoch 0 / 5]
+Traceback (most recent call last):
+  File "/home/sonu/PycharmProjects/nmt/main.py", line 110, in <module>
+    output = model(inp_data, target)
+  File "/home/sonu/anaconda3/envs/torch/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/sonu/PycharmProjects/nmt/model.py", line 68, in forward
+    out = self.transformer(embed_src, embed_trg,
+  File "/home/sonu/anaconda3/envs/torch/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/sonu/anaconda3/envs/torch/lib/python3.9/site-packages/torch/nn/modules/transformer.py", line 141, in forward
+    memory = self.encoder(src, mask=src_mask, src_key_padding_mask=src_key_padding_mask)
+  File "/home/sonu/anaconda3/envs/torch/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/sonu/anaconda3/envs/torch/lib/python3.9/site-packages/torch/nn/modules/transformer.py", line 198, in forward
+    output = mod(output, src_mask=mask, src_key_padding_mask=src_key_padding_mask)
+  File "/home/sonu/anaconda3/envs/torch/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/sonu/anaconda3/envs/torch/lib/python3.9/site-packages/torch/nn/modules/transformer.py", line 339, in forward
+    x = self.norm1(x + self._sa_block(x, src_mask, src_key_padding_mask))
+  File "/home/sonu/anaconda3/envs/torch/lib/python3.9/site-packages/torch/nn/modules/transformer.py", line 347, in _sa_block
+    x = self.self_attn(x, x, x,
+  File "/home/sonu/anaconda3/envs/torch/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/sonu/anaconda3/envs/torch/lib/python3.9/site-packages/torch/nn/modules/activation.py", line 1003, in forward
+    attn_output, attn_output_weights = F.multi_head_attention_forward(
+  File "/home/sonu/anaconda3/envs/torch/lib/python3.9/site-packages/torch/nn/functional.py", line 4988, in multi_head_attention_forward
+    q, k, v = _in_projection_packed(query, key, value, in_proj_weight, in_proj_bias)
+  File "/home/sonu/anaconda3/envs/torch/lib/python3.9/site-packages/torch/nn/functional.py", line 4753, in _in_projection_packed
+    return linear(q, w_q, b_q), linear(k, w_k, b_k), linear(v, w_v, b_v)
+  File "/home/sonu/anaconda3/envs/torch/lib/python3.9/site-packages/torch/nn/functional.py", line 1848, in linear
+    return torch._C._nn.linear(input, weight, bias)
+RuntimeError: CUDA error: CUBLAS_STATUS_EXECUTION_FAILED when calling `cublasSgemm( handle, opa, opb, m, n, k, &alpha, a, lda, b, ldb, &beta, c, ldc)`
+
+Process finished with exit code 1
