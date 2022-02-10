@@ -4,6 +4,19 @@ import random
 
 # from torchtext.data import Field
 
+import string
+
+
+def remove_punc(text_list):
+    table = str.maketrans('', '', string.punctuation)
+    removed_punc_text = []
+    for sent in text_list:
+        sent = sent.lower()
+        sentence = [w.translate(table) for w in sent.split(' ')]
+        removed_punc_text.append(' '.join(sentence))
+    return removed_punc_text
+
+
 german_tok = spacy.load("de_core_news_sm")
 english_tok = spacy.load("en_core_web_sm")
 
@@ -27,9 +40,10 @@ class vocab(object):
     def build_vocab(self):
         curr_num = 4
         lines = self.file.readlines()
+        lines = remove_punc(lines)
         random.shuffle(lines)
         for t in lines:
-            token_sen = self.lang(t.lower())
+            token_sen = self.lang(t)
             self.max_len = max(self.max_len, len(token_sen))
             for tok in token_sen:
                 if tok not in self.stoi:
@@ -43,8 +57,9 @@ def load_data(file_name, vocab_obj):
     dataset = []
     file = open(file_name)
     lines = file.readlines()
+    lines = remove_punc(lines)
     for t in lines:
-        tokens = vocab_obj.lang(t.lower())
+        tokens = vocab_obj.lang(t)
         out_ = [vocab_obj.stoi["<sos>"]]
         for token in tokens:
             if str(token) not in vocab_obj.stoi:
@@ -60,10 +75,10 @@ print("starting threads")
 start_time = time.time()
 # que = mp.Queue()
 with concurrent.futures.ThreadPoolExecutor() as executor:
-    f1 = executor.submit(load_data, "/home/sonu/Desktop/torch/data/nmt/train/train.en", eng_train)
-    f2 = executor.submit(load_data, "/home/sonu/Desktop/torch/data/nmt/train/train.de", ger_train)
-    dataset_eng = f1.result()
-    dataset_ger = f2.result()
+   f1 = executor.submit(load_data, "/home/sonu/Desktop/torch/data/nmt/train/train.en", eng_train)
+   f2 = executor.submit(load_data, "/home/sonu/Desktop/torch/data/nmt/train/train.de", ger_train)
+   dataset_eng = f1.result()
+   dataset_ger = f2.result()
 end_time = time.time()
 print("took {} seconds for building dataset".format(end_time - start_time))
 

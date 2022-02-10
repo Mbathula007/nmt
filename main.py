@@ -73,17 +73,17 @@ load_model = False
 save_model = True
 
 num_epochs = 20
-lr = 3e-2
+lr = 3e-4
 src_vocab_size = max(ger_train.stoi.values()) + 1
 trg_vocab_size = max(eng_train.stoi.values()) + 1
 # print(src_vocab_size, trg_vocab_size)
-embedding_size = 512
+embedding_size = 1024
 num_heads = 8
 num_encoder_layers = 3
 num_decoder_layers = 3
 dropout = 0.10
 max_len = 100
-forward_expansion = 2048
+forward_expansion = 4
 src_pad_idx = eng_train.stoi["<pad>"]
 writer = SummaryWriter("runs/loss_plot")
 step = 0
@@ -113,7 +113,7 @@ for epoch in range(num_epochs):
     print(f"[Epoch {epoch} / {num_epochs}]")
     model.eval()
     with torch.no_grad():
-        writer.add_text("translated eng", translate(ge, model, ger_train, eng_train, device),global_step=step_)
+        writer.add_text("translated eng", translate(ge, model, ger_train, eng_train, device), global_step=step_)
         writer.add_text("actual eng sentence is ", en, global_step=step_)
         writer.add_text("actual ger sentence is ", ge, global_step=step_)
         # print(translate(ge, model, ger_train, eng_train, device))
@@ -136,9 +136,8 @@ for epoch in range(num_epochs):
         # way that we have output_words * batch_size that we want to send in into
         # our cost function, so we need to do some reshapin.
         # Let's also remove the start token while we're at it
-        with torch.no_grad():
-            output = output.reshape(-1, output.shape[2])
-            desired = desired.reshape(-1)
+        output = output.reshape(-1, output.shape[2])
+        desired = desired.reshape(-1)
 
         # print(target.shape, output.shape)
         optimizer.zero_grad()

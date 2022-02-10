@@ -41,22 +41,21 @@ class Transformer(nn.Module):
         return src_mask
 
     def forward(self, src, trg):
-        with torch.no_grad():
-            # print("trg shape is ", trg.shape, src.shape)
-            # print(torch.max(trg),torch.min(trg))
-            N, src_seq_len, = src.shape
-            N, trg_seq_len = trg.shape
-            # print(N,)
-            src_positions = (
-                torch.arange(0, src_seq_len).unsqueeze(0).expand(N, src_seq_len).to(self.device)
-            )
-            # print("src_pos shape is ", src_positions.shape)
-            trg_positions = (
-                torch.arange(0, trg_seq_len).unsqueeze(0).expand(N, trg_seq_len).to(self.device)
-            )
-            # print("trg_pos shape is ", trg_positions.shape)
-            src_padding_mask = self.make_src_mask(src).to(self.device)
-            trg_mask = self.transformer.generate_square_subsequent_mask(trg_seq_len).to(self.device)
+        # print("trg shape is ", trg.shape, src.shape)
+        # print(torch.max(trg),torch.min(trg))
+        N, src_seq_len, = src.shape
+        N, trg_seq_len = trg.shape
+        # print(N,)
+        src_positions = (
+            torch.arange(0, src_seq_len).unsqueeze(0).expand(N, src_seq_len).to(self.device)
+        )
+        # print("src_pos shape is ", src_positions.shape)
+        trg_positions = (
+            torch.arange(0, trg_seq_len).unsqueeze(0).expand(N, trg_seq_len).to(self.device)
+        )
+        # print("trg_pos shape is ", trg_positions.shape)
+        src_padding_mask = self.make_src_mask(src).to(self.device)
+        trg_mask = self.transformer.generate_square_subsequent_mask(trg_seq_len).to(self.device)
         embed_src = self.dropout(
             (self.src_word_embedding(src) + self.src_pos_embedding(src_positions))
         )
