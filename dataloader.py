@@ -2,8 +2,35 @@ from abc import ABC
 
 import torch
 from torch.utils.data import Dataset, IterableDataset
-from tokenize_custom import tokenize_en, tokenize_ge
+from tokenize_custom import tokenize_en, tokenize_ge, remove_punc
 from itertools import cycle
+
+
+def collate_fn(data):
+    def pad_(sentence, max_len):
+        return torch.cat((sentence, torch.zeros([max_len - sentence.shape[0]], dtype=torch.long)), dim=0).unsqueeze(0)
+
+    out_data = {}
+    max_len_inp = max(data, key=lambda x: x["inp"].shape[0])["inp"].shape[0]
+    max_len_tar = max(data, key=lambda x: x["tar"].shape[0])["tar"].shape[0]
+    data_ = sorted(data, key=lambda x: x["inp"].shape[0])
+    for c in data_:
+        inp_sen = c["inp"]
+        tar_sen = c["tar"]
+        des_sen = c["des"]
+        if "inp" in out_data:
+            out_data["inp"] = torch.cat((out_data["inp"], pad_(inp_sen, max_len_inp)), dim=0)
+        else:
+            out_data["inp"] = pad_(inp_sen, max_len_inp)
+        if "tar" in out_data:
+            out_data["tar"] = torch.cat((out_data["tar"], pad_(tar_sen, max_len_tar)), dim=0)
+        else:
+            out_data["tar"] = pad_(tar_sen, max_len_tar)
+        if "des" in out_data:
+            out_data["des"] = torch.cat((out_data["des"], pad_(des_sen, max_len_tar)), dim=0)
+        else:
+            out_data["des"] = pad_(des_sen, max_len_tar)
+    return out_data
 
 
 class map_dataset(Dataset):
@@ -17,9 +44,9 @@ class map_dataset(Dataset):
         return len(self.eng)
 
     def __getitem__(self, idx):
-        return {"inp": torch.LongTensor(self.ger[idx] + ([0] * (self.max_len - len(self.ger[idx])))),
-                "tar": torch.LongTensor(self.eng[idx][:-1] + [0] * (self.max_len + 1 - len(self.eng[idx]))),
-                "des": torch.LongTensor(self.eng[idx][1:] + [0] * (self.max_len + 1 - len(self.eng[idx])))}
+        return {"inp": torch.LongTensor(self.ger[idx]),
+                "tar": torch.LongTensor(self.eng[idx]),
+                "des": torch.LongTensor(self.eng[idx][1:])}
 
 
 class iter_dataset(IterableDataset, ABC):
@@ -59,3 +86,15 @@ class iter_dataset(IterableDataset, ABC):
 
     def __iter__(self):
         return self.get_stream()
+
+
+class map_dataset_test(Dataset):
+    def __init__(self, inp_file, out_file):
+        self.in_ = remove_punc(open(inp_file).readlines())
+        self.ou_ = remove_punc(open(out_file).readlines())
+
+    def __len__(self):
+        return len(self.in_)
+
+    def __getitem__(self, item):
+        return {"inp": tokenize_ge(self.in_[item].lower()), "tar": tokenize_en(self.ou_[item].lower())}

@@ -72,11 +72,15 @@ class Transformer(nn.Module):
 
 def translate(sentence, model, input_lang, output_lang, device, max_len=20):
     # print(list(input_lang.stoi.keys())[:5])
-    tokens = [str(tok) for tok in german_tok(sentence.lower())]
-    # print(tokens)
-    # print(tokens)
+    if isinstance(sentence,str):
+        tokens = [str(tok) for tok in german_tok(sentence.lower())]
+        # print(tokens)
+    else:
+        tokens = sentence
     input_ = [input_lang.stoi["<sos>"]]
     for token in tokens:
+        if token not in input_lang.stoi:
+            token = "<unk>"
         input_.append(input_lang.stoi[str(token)])
     input_.append(input_lang.stoi["<eos>"])
     input_tensor = torch.LongTensor(input_).unsqueeze(0).to(device)
@@ -99,7 +103,7 @@ def translate(sentence, model, input_lang, output_lang, device, max_len=20):
         output_tensor = torch.cat([output_tensor, guess], dim=-1)
         # print("output shape is ",output_tensor.shape)
     translated_sentence = ""
-    output_ = output_tensor.squeeze().tolist()
+    output_ = output_tensor.squeeze().tolist()[1:-1]
     for token in output_:
         translated_sentence = translated_sentence + str(output_lang.itos[token]) + str(" ")
     return translated_sentence
@@ -108,3 +112,9 @@ def translate(sentence, model, input_lang, output_lang, device, max_len=20):
 def save_checkpoint(state, filename="my_checkpoint.pth.tar"):
     print("=> Saving checkpoint")
     torch.save(state, filename)
+
+
+def load_checkpoint(checkpoint, model, optimizer):
+    print("=> Loading checkpoint")
+    model.load_state_dict(checkpoint["state_dict"])
+    optimizer.load_state_dict(checkpoint["optimizer"])

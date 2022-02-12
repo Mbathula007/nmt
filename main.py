@@ -9,7 +9,7 @@ from torch import optim
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
-from dataloader import iter_dataset, map_dataset
+from dataloader import iter_dataset, map_dataset, collate_fn
 from tokenize_custom import tokenize_en, tokenize_ge, load_data
 from tokenize_custom import vocab
 from model import Transformer, translate, save_checkpoint
@@ -61,7 +61,7 @@ if map_ds:
 else:
     dataset_ = iter_dataset(input_loc, output_loc, eng_train, ger_train, max_len=100)
 batch_size = 32
-train_loader = DataLoader(dataset_, batch_size=batch_size, drop_last=True)
+train_loader = DataLoader(dataset_, batch_size=batch_size, drop_last=True, collate_fn=collate_fn)
 
 # print("for Ein the index is ",ger_train.stoi["Ein"])
 ge = "Ein kleines Mädchen klettert in ein Spielhaus aus Holz"
@@ -136,8 +136,10 @@ for epoch in range(num_epochs):
         # way that we have output_words * batch_size that we want to send in into
         # our cost function, so we need to do some reshapin.
         # Let's also remove the start token while we're at it
+        # print(output.shape,inp_data.shape,target.shape,desired.shape)
         output = output.reshape(-1, output.shape[2])
         desired = desired.reshape(-1)
+        # print(output.shape,desired.shape)
 
         # print(target.shape, output.shape)
         optimizer.zero_grad()
